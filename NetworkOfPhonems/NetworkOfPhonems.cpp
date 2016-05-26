@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
 				std::string phonems = "";
 
 				std::cout << "Please type sequence of phonems: ";
-				std::cin >> phonems;
+				std::getline(std::cin, phonems);
 				std::cout << "ID: " << std::to_string(phone_net->get_id_by_set(phonems)) << std::endl;
 			}
 			else

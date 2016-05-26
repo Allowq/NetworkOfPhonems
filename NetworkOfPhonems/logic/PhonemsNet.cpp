@@ -60,8 +60,21 @@ void PhonemsNet::generate_dictionary(const std::string &file_name) const {
 
 }
 
-int32_t PhonemsNet::get_id_by_set(const std::string &phonems) const {
-	return -1;
+int32_t PhonemsNet::get_id_by_set(const std::string &phonems) {
+	std::stringstream words(phonems);
+	std::string phonem;
+
+	std::vector<std::string> phonem_vector;
+	while (words >> phonem)
+		phonem_vector.push_back(phonem);
+
+	std::shared_ptr<PHONEM_NODE_STRUCT> local_tail = nullptr;
+	std::vector<std::string>::iterator shift = phonem_vector.begin();
+
+	int32_t id_value = -1;
+	head_of_net.get_id_for_phonems(shift, phonem_vector.end(), local_tail, id_value);
+
+	return id_value;
 }
 
 bool PhonemsNet::init_phonem_table() {
@@ -98,29 +111,19 @@ void PhonemsNet::parse_and_add(const std::string &phonems_line) {
 	std::stringstream words(phonems_line);
 	std::string phonem;
 
-	PHONEM_NODE_STRUCT *node = nullptr;
 	std::shared_ptr<PHONEM_NODE_STRUCT> local_tail = nullptr;
 	std::vector<std::string> phonem_vector;
 	std::vector<std::string>::iterator shift;
 
 	while (words >> phonem)
 		phonem_vector.push_back(phonem);
-
 	shift = phonem_vector.begin();
-	if (head_of_net.get_tail_for_phonems(shift, phonem_vector.end(), local_tail))
-	{
-		if (local_tail == nullptr)
-			head_of_net.add_phonem_sequence(phonem_vector, head_of_net);
-		else
-			local_tail.get()->add_phonem_sequence(shift, phonem_vector.end());
-	}
-	//node = new PHONEM_NODE_STRUCT(PHONEM_TYPE::NODE_TYPE_PHONE, phonem);
-	//is_new = check_node(node, local_tail);
-	//if (is_new)
-	//{
-	//	node = new PHONEM_NODE_STRUCT(PHONEM_TYPE::NODE_TYPE_PHONE, std::to_string(word_count));
-	//	word_count++;
-	//}
+
+	head_of_net.get_tail_for_phonems(shift, phonem_vector.end(), local_tail);
+	if (local_tail == nullptr)
+		head_of_net.add_phonem_sequence(phonem_vector, head_of_net);
+	else
+		local_tail.get()->add_phonem_sequence(shift, phonem_vector.end());
 }
 
 void PhonemsNet::set_dictionary_path(const std::string &path) {

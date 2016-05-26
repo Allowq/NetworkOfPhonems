@@ -26,10 +26,13 @@ public:
 	PHONEM_NODE_STRUCT();
 	PHONEM_NODE_STRUCT(const PHONEM_TYPE &_type, const std::string &_phonem_value);
 
-	std::shared_ptr<PHONEM_NODE_STRUCT> add_children(PHONEM_NODE_STRUCT &ptr);
 	void add_phonem_sequence(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end);
 	void add_phonem_sequence(const std::vector<std::string> &sequence, PHONEM_NODE_STRUCT &head_node);
-	bool get_tail_for_phonems(std::vector<std::string>::iterator &start, 
+	void get_id_for_phonems(std::vector<std::string>::iterator &it, 
+		const std::vector<std::string>::iterator &end, 
+		std::shared_ptr<PHONEM_NODE_STRUCT> &local_tail,
+		int32_t &id_value);
+	void get_tail_for_phonems(std::vector<std::string>::iterator &start, 
 		const std::vector<std::string>::iterator &end, 
 		std::shared_ptr<PHONEM_NODE_STRUCT> &local_tail);
 

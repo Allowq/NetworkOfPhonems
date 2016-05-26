@@ -36,7 +36,7 @@ public:
 	void create_network();
 	bool dict_is_set();
 	void generate_dictionary(const std::string &file_name) const;
-	int32_t get_id_by_set(const std::string &phonems) const;
+	int32_t get_id_by_set(const std::string &phonems);
 	void interrupt();
 	bool is_interrupted() const;
 	void set_dictionary_path(const std::string &path);
