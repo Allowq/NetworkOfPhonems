@@ -10,14 +10,6 @@ PhonemsNet::PhonemsNet(boost::mutex *io_mutex)
 #endif
 }
 
-bool PhonemsNet::check_tail(const std::string &phonem, std::shared_ptr<PHONEM_NODE_STRUCT *> local_tail) {
-	if (local_tail == nullptr) {
-		
-	}
-
-	return true;
-}
-
 void PhonemsNet::create_network() {
 	if (!dict_is_set()) {
 		boost::mutex::scoped_lock lock(*io_mutex);
@@ -33,12 +25,18 @@ void PhonemsNet::create_network() {
 	std::stringstream liness;
 
 	while (getline(dict_file, line)) {
-		liness << line;
-		getline(liness, full_word, '=');
-		getline(liness, phonems_line, '#');
+		if (!line.empty() && line != "\r")
+		{
+			liness << line;
 
-		parse_and_add(phonems_line);
+			getline(liness, full_word, '=');
+			getline(liness, phonems_line, '#');
+
+			parse_and_add(phonems_line);
+		}
 	}
+
+	std::cout << std::endl << "Number of words = " << head_of_net.get_last_id() << std::endl;
 }
 
 bool PhonemsNet::dict_is_set() {
@@ -57,7 +55,23 @@ bool PhonemsNet::dict_is_set() {
 }
 
 void PhonemsNet::generate_dictionary(const std::string &file_name) const {
+	std::string out_file_name = file_name;
+	
+	if (out_file_name.empty())
+		out_file_name = "empty.txt";
+	std::ofstream file_out(out_file_name, std::ofstream::binary / std::ofstream::trunc);
 
+	if (!file_out || !file_out.is_open() || !file_out.good()) {
+		boost::mutex::scoped_lock lock(*io_mutex);
+		std::cout << "Fail! File to dictionary not available" << std::endl << std::endl;
+		return;
+	}
+
+	PHONEM_NODE_STRUCT *head = const_cast<PHONEM_NODE_STRUCT *>(&head_of_net);
+	if (head->dictionary_to_file(file_out)) {
+		boost::mutex::scoped_lock lock(*io_mutex);
+		std::cout << "Dictionary success upload" << std::endl << std::endl;
+	}
 }
 
 int32_t PhonemsNet::get_id_by_set(const std::string &phonems) {

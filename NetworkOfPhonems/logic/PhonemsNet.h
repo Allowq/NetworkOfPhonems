@@ -26,7 +26,6 @@ private:
 	static uint32_t word_count;
 	std::unordered_set<std::string> phonem_table;
 
-	bool check_tail(const std::string &phonem, std::shared_ptr<PHONEM_NODE_STRUCT *> local_tail);
 	bool init_phonem_table();
 	void parse_and_add(const std::string &phonems_line);
 

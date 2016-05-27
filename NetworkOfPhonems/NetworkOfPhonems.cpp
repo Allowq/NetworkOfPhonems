@@ -148,11 +148,12 @@ int main(int argc, char* argv[])
 		case 3:
 			if (phone_net->dict_is_set())
 			{
-				boost::mutex::scoped_lock lock(io_mutex);
 				std::string file_name = "";
-
-				std::cout << "Please type file name: ";
-				std::cin >> file_name;
+				{
+					boost::mutex::scoped_lock lock(io_mutex);
+					std::cout << "Please type file name: ";
+					std::cin >> file_name;
+				}
 				phone_net->generate_dictionary(file_name);
 			}
 			else
