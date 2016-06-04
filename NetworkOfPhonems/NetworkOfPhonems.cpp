@@ -71,7 +71,7 @@ std::pair<LOAD_OPTIONS_ENUM, std::string> parsing_parameters(int argc, char* arg
 
 void signal_handler(int32_t signal)
 {
-	console->info("Signal {} was send", signal);
+	console->info("\nSignal {} was send", signal);
 
 	if (phone_net) {
 		phone_net->interrupt();
@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
 				std::cout << "ID: " << std::to_string(phone_net->get_id_by_set(phonems)) << std::endl;
 			}
 			else
-				console->info("Fail! Path to dictionary not seted \n\n");
+				console->info("\nFail! Path to dictionary not seted");
 			break;
 
 		case 3:
@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 				phone_net->generate_dictionary(file_name);
 			}
 			else
-				console->info("Fail! Path to dictionary not seted \n\n");
+				console->info("\nFail! Path to dictionary not seted");
 			break;
 
 		case 4:

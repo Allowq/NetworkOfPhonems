@@ -13,7 +13,7 @@ PhonemsNet::PhonemsNet()
 
 void PhonemsNet::create_network() {
 	if (!dict_is_set()) {
-		console->info("Fail! Path to dictionary not seted \n\n");
+		console->info("\nFail! Path to dictionary not seted");
 		return;
 	}
 
@@ -36,7 +36,7 @@ void PhonemsNet::create_network() {
 		}
 	}
 
-	console->info() << "\nNumber of words = " << head_of_net.get_last_id();
+	console->info("\nNumber of words = ") << head_of_net.get_last_id();
 }
 
 bool PhonemsNet::dict_is_set() {
@@ -62,7 +62,7 @@ void PhonemsNet::generate_dictionary(const std::string &file_name) const {
 	std::ofstream file_out(out_file_name, std::ofstream::binary / std::ofstream::trunc);
 
 	if (!file_out || !file_out.is_open() || !file_out.good()) {
-		console->info("Fail! File to dictionary not available\n\n");
+		console->info("\nFail! File to dictionary not available");
 		return;
 	}
 
@@ -91,7 +91,7 @@ int32_t PhonemsNet::get_id_by_set(const std::string &phonems) {
 bool PhonemsNet::init_phonem_table() {
 	std::ifstream file("phone.txt", std::ifstream::binary);
 	if (!file || !file.is_open() || !file.good()) {
-		console->info("Fail! Phonem table not foun\n\n");
+		console->info("\nFail! Phonem table not found");
 		return false;
 	}
 
