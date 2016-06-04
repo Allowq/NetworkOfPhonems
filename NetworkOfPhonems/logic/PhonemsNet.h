@@ -5,8 +5,8 @@
 
 #include <fstream>
 #include <unordered_set>
-
-#include <boost\thread\mutex.hpp>
+#include <sstream> 
+#include <spdlog\spdlog.h>
 
 #include "PhonemNode.h"
 
@@ -15,7 +15,7 @@
 class PhonemsNet
 {
 private:
-	boost::mutex *io_mutex;
+	std::shared_ptr<spdlog::logger> console;
 
 	std::ifstream dict_file;
 
@@ -30,7 +30,7 @@ private:
 	void parse_and_add(const std::string &phonems_line);
 
 public:
-	explicit PhonemsNet(boost::mutex *io_mutex);
+	explicit PhonemsNet();
 
 	void create_network();
 	bool dict_is_set();

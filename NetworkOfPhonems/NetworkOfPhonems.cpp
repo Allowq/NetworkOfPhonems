@@ -6,13 +6,15 @@
 PhonemsNet *phone_net;
 
 boost::mutex io_mutex;
+auto console = spdlog::stdout_logger_mt("console", true);
 
 void enter_dict_path() {
 	std::string path_to_dict = "";
-
-	std::cout << "Enter full path to dict: ";
-	std::cin >> path_to_dict;
-
+	{
+		boost::mutex::scoped_lock lock(io_mutex);
+		std::cout << "Enter full path to dict: ";
+		std::cin >> path_to_dict;
+	}
 	phone_net->set_dictionary_path(path_to_dict);
 }
 
@@ -69,10 +71,7 @@ std::pair<LOAD_OPTIONS_ENUM, std::string> parsing_parameters(int argc, char* arg
 
 void signal_handler(int32_t signal)
 {
-	{
-		boost::mutex::scoped_lock lock(io_mutex);
-		std::cout << "Signal " << signal << " was send" << std::endl;
-	}
+	console->info("Signal {} was send", signal);
 
 	if (phone_net) {
 		phone_net->interrupt();
@@ -87,8 +86,9 @@ int main(int argc, char* argv[])
 {
 	std::pair<LOAD_OPTIONS_ENUM, std::string> pair = parsing_parameters(argc, argv);
 	uint32_t option = 0;
+	console->set_pattern("%v");
 
-	phone_net = new PhonemsNet(&io_mutex);
+	phone_net = new PhonemsNet();
 	if (pair.first == LOAD_OPTIONS_ENUM::dict_from_file)
 		phone_net->set_dictionary_path(pair.second);
 
@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
 	{
 		{
 			boost::mutex::scoped_lock lock(io_mutex);
-			std::cout << "- - - - -" << std::endl;
+			std::cout << "\n\n- - - - -" << std::endl;
 			std::cout << "Choose option: " << std::endl
 				<< "[1] Create network" << std::endl
 				<< "[2] Get id" << std::endl
@@ -119,30 +119,23 @@ int main(int argc, char* argv[])
 			break;
 
 		case 1:
-			if (phone_net->dict_is_set())
-				phone_net->create_network();
-			else 
-			{
-				boost::mutex::scoped_lock lock(io_mutex);
-				std::cout << "Fail! Path to dictionary not seted" << std::endl << std::endl;
-			}
+			phone_net->create_network();
 			break;
 
 		case 2:
 			if (phone_net->dict_is_set())
 			{
-				boost::mutex::scoped_lock lock(io_mutex);
 				std::string phonems = "";
+				{
+					boost::mutex::scoped_lock lock(io_mutex);
 
-				std::cout << "Please type sequence of phonems: ";
-				std::getline(std::cin, phonems);
+					std::cout << "Please type sequence of phonems: ";
+					std::getline(std::cin, phonems);
+				}
 				std::cout << "ID: " << std::to_string(phone_net->get_id_by_set(phonems)) << std::endl;
 			}
 			else
-			{
-				boost::mutex::scoped_lock lock(io_mutex);
-				std::cout << "Fail! Path to dictionary not seted" << std::endl << std::endl;
-			}
+				console->info("Fail! Path to dictionary not seted \n\n");
 			break;
 
 		case 3:
@@ -157,10 +150,7 @@ int main(int argc, char* argv[])
 				phone_net->generate_dictionary(file_name);
 			}
 			else
-			{
-				boost::mutex::scoped_lock lock(io_mutex);
-				std::cout << "Fail! Path to dictionary not seted" << std::endl << std::endl;
-			}
+				console->info("Fail! Path to dictionary not seted \n\n");
 			break;
 
 		case 4:

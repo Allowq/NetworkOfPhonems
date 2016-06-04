@@ -2,9 +2,10 @@
 
 uint32_t PhonemsNet::word_count = 0;
 
-PhonemsNet::PhonemsNet(boost::mutex *io_mutex)
-	: path_to_dict(""), is_interrupt(false), io_mutex(io_mutex)
+PhonemsNet::PhonemsNet()
+	: path_to_dict(""), is_interrupt(false)
 {
+	console = spdlog::get("console");
 #ifdef LOCALE_DICTIONARY
 	path_to_dict = "dictionary.txt";
 #endif
@@ -12,8 +13,7 @@ PhonemsNet::PhonemsNet(boost::mutex *io_mutex)
 
 void PhonemsNet::create_network() {
 	if (!dict_is_set()) {
-		boost::mutex::scoped_lock lock(*io_mutex);
-		std::cout << "Fail! Path to dictionary not seted" << std::endl << std::endl;
+		console->info("Fail! Path to dictionary not seted \n\n");
 		return;
 	}
 
@@ -36,7 +36,7 @@ void PhonemsNet::create_network() {
 		}
 	}
 
-	std::cout << std::endl << "Number of words = " << head_of_net.get_last_id() << std::endl;
+	console->info() << "\nNumber of words = " << head_of_net.get_last_id();
 }
 
 bool PhonemsNet::dict_is_set() {
@@ -62,16 +62,13 @@ void PhonemsNet::generate_dictionary(const std::string &file_name) const {
 	std::ofstream file_out(out_file_name, std::ofstream::binary / std::ofstream::trunc);
 
 	if (!file_out || !file_out.is_open() || !file_out.good()) {
-		boost::mutex::scoped_lock lock(*io_mutex);
-		std::cout << "Fail! File to dictionary not available" << std::endl << std::endl;
+		console->info("Fail! File to dictionary not available\n\n");
 		return;
 	}
 
 	PHONEM_NODE_STRUCT *head = const_cast<PHONEM_NODE_STRUCT *>(&head_of_net);
-	if (head->dictionary_to_file(file_out)) {
-		boost::mutex::scoped_lock lock(*io_mutex);
-		std::cout << "Dictionary success upload" << std::endl << std::endl;
-	}
+	if (head->dictionary_to_file(file_out)) 
+		console->info("\nDictionary success upload");
 }
 
 int32_t PhonemsNet::get_id_by_set(const std::string &phonems) {
@@ -94,8 +91,7 @@ int32_t PhonemsNet::get_id_by_set(const std::string &phonems) {
 bool PhonemsNet::init_phonem_table() {
 	std::ifstream file("phone.txt", std::ifstream::binary);
 	if (!file || !file.is_open() || !file.good()) {
-		boost::mutex::scoped_lock lock(*io_mutex);
-		std::cout << "Fail! Phonem table not found" << std::endl << std::endl;
+		console->info("Fail! Phonem table not foun\n\n");
 		return false;
 	}
 
@@ -153,7 +149,5 @@ void PhonemsNet::set_dictionary_path(const std::string &path) {
 
 PhonemsNet::~PhonemsNet() {
 	if (dict_file.is_open())
-	{
 		dict_file.close();
-	}
 }

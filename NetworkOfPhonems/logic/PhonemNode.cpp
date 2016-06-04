@@ -1,6 +1,6 @@
 #include "PhonemNode.h"
 
-uint32_t PHONEM_NODE_STRUCT::phonem_id = 0;
+std::atomic<uint32_t> PHONEM_NODE_STRUCT::phonem_id(0);
 
 PHONEM_NODE_STRUCT::PHONEM_NODE_STRUCT()
 	: phonem_value(""), type(PHONEM_TYPE::NODE_TYPE_BEGIN)
@@ -13,7 +13,9 @@ PHONEM_NODE_STRUCT::PHONEM_NODE_STRUCT(const PHONEM_TYPE &_type, const std::stri
 }
 
 void PHONEM_NODE_STRUCT::add_phonem_sequence(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end) {
-	std::shared_ptr<PHONEM_NODE_STRUCT> tail;
+	std::shared_ptr<PHONEM_NODE_STRUCT> tail = nullptr;
+
+	// добавляю фонему в список детей ноды
 	if (it != end)
 	{
 		this->childrens.push_back(std::make_shared<PHONEM_NODE_STRUCT>(PHONEM_NODE_STRUCT(PHONEM_TYPE::NODE_TYPE_PHONE, *it)));
@@ -22,10 +24,12 @@ void PHONEM_NODE_STRUCT::add_phonem_sequence(std::vector<std::string>::iterator 
 		std::cout << *it << " ";
 #endif
 
+		// получаю хвост списка детей ноды
 		tail = this->childrens.back();
 		++it;
 	}
 
+	// в цикле дозаписываю оставшиеся фонемы в хвост
 	while (it != end)
 	{
 		tail->childrens.push_back(std::make_shared<PHONEM_NODE_STRUCT>(PHONEM_NODE_STRUCT(PHONEM_TYPE::NODE_TYPE_PHONE, *it)));
@@ -37,10 +41,10 @@ void PHONEM_NODE_STRUCT::add_phonem_sequence(std::vector<std::string>::iterator 
 		tail = tail->childrens.back();
 		++it;
 	}
+
 	if (tail != nullptr)
-	{
 		tail->childrens.push_back(std::make_shared<PHONEM_NODE_STRUCT>(PHONEM_NODE_STRUCT(PHONEM_TYPE::NODE_TYPE_WORD, std::to_string(phonem_id++))));
-	} else 
+	else 
 		this->childrens.push_back(std::make_shared<PHONEM_NODE_STRUCT>(PHONEM_NODE_STRUCT(PHONEM_TYPE::NODE_TYPE_WORD, std::to_string(phonem_id++))));
 
 #ifdef VERBOSE_MODE
@@ -74,7 +78,8 @@ void PHONEM_NODE_STRUCT::add_phonem_sequence(const std::vector<std::string> &seq
 		tail = tail->childrens.back();
 		++it;
 	}
-	tail->childrens.push_back(std::make_shared<PHONEM_NODE_STRUCT>(PHONEM_NODE_STRUCT(PHONEM_TYPE::NODE_TYPE_WORD, std::to_string(phonem_id++))));
+	tail->childrens.push_back(std::make_shared<PHONEM_NODE_STRUCT>(PHONEM_NODE_STRUCT( PHONEM_TYPE::NODE_TYPE_WORD, std::to_string(phonem_id.fetch_add(1)) )));
+	++phonem_id;
 
 #ifdef VERBOSE_MODE
 	std::cout << phonem_id - 1 << std::endl;
@@ -143,8 +148,7 @@ void PHONEM_NODE_STRUCT::get_tail_for_phonems(std::vector<std::string>::iterator
 	//		return false;
 }
 
-bool PHONEM_NODE_STRUCT::tree_traverssal(std::ofstream &file_out,
-	std::vector<std::string> &phonems_line)
+bool PHONEM_NODE_STRUCT::tree_traverssal(std::ofstream &file_out, std::vector<std::string> &phonems_line)
 {
 	std::vector<std::shared_ptr<PHONEM_NODE_STRUCT>>::iterator start_it = childrens.begin();
 	while (start_it != childrens.end()) {
@@ -156,11 +160,11 @@ bool PHONEM_NODE_STRUCT::tree_traverssal(std::ofstream &file_out,
 			phonems_line.push_back(start_it->get()->phonem_value);
 			write_line_to_dictionary(file_out, phonems_line);
 			phonems_line.pop_back();
-			return true;
 		}
 		++start_it;
-		phonems_line.pop_back();
 	}
+	if (!phonems_line.empty())
+		phonems_line.pop_back();
 
 	return true;
 }
@@ -171,12 +175,18 @@ void PHONEM_NODE_STRUCT::write_line_to_dictionary(std::ofstream &file_out, std::
 	while (itr != phonems_line.end()) {
 		temp = *itr;
 		++itr;
-		if (itr == phonems_line.end())
-			line.append("#" + temp +"\n");
-		else
+		if (itr == phonems_line.end()) {
+			line.append("#" + temp + "\n");
+			if (std::atoi(temp.c_str()) == 17250)
+				int x = 6;
+		} else
 			line.append(temp + " ");
 	}
 	file_out << line;
+
+#ifdef VERBOSE_MODE
+	std::cout << line << std::endl;
+#endif
 }
 
 PHONEM_NODE_STRUCT::~PHONEM_NODE_STRUCT() {

@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 
+#include <atomic>
 #include <string>
 #include <vector>
 #include <memory>
@@ -20,7 +21,7 @@ enum PHONEM_TYPE {
 class PHONEM_NODE_STRUCT {
 
 private:
-	static uint32_t phonem_id;
+	static std::atomic<uint32_t> phonem_id;
 
 	const std::string phonem_value;
 	const PHONEM_TYPE type;
